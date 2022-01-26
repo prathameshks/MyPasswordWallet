@@ -12,19 +12,23 @@ class Encrypter:
         d_data = manager.decrypt(data)
         return d_data
 
-    def get_key(self):
+    def get_new_key(self):
         if os.path.exists(r'files/key.txt'):
-            with open(r"files/key.txt","r") as file:
-                filedata = file.read()
+            newkey = Fernet.generate_key()
+            with  open(r"files/key.txt","r") as file1:
+                filedata = file1.read()
             with open(r"files/oldkey.txt",'w') as oldfile:
-                oldfile.write(filedata)    
-            return filedata
+                oldfile.write(filedata) 
+            with  open(r"files/key.txt","w") as file1:
+                filedata = file1.write(newkey.decode('ascii'))
+            return newkey
         else:
             key = Fernet.generate_key()
             with open(r"files/key.txt","w") as file:
-                file.write(key)
+                file.write(key.decode('ascii'))
             return key
+    
 
 encrypter = Encrypter()
 
-print(encrypter.get_key())
+print(encrypter.get_new_key())
