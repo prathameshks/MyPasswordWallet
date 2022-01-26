@@ -27,7 +27,14 @@ class Encrypter:
             with open(r"files/key.txt","w") as file:
                 file.write(key.decode('ascii'))
             return key
-    
+    def get_old_key(self):
+        if os.path.exists(r'files/oldkey.txt'):
+            with open(r"files/oldkey.txt",'r') as oldfile:
+                old_data = oldfile.read()
+                old_key = old_data.decode('ascii')
+            return old_key
+        else:
+            return False
 
 encrypter = Encrypter()
 
