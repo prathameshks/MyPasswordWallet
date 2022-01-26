@@ -21,14 +21,21 @@ class Encrypter:
                 oldfile.write(filedata) 
             with  open(r"files/key.txt","w") as file1:
                 filedata = file1.write(newkey.decode('ascii'))
-            return newkey
+            return newkey.decode('ascii')
         else:
             key = Fernet.generate_key()
             with open(r"files/key.txt","w") as file:
                 file.write(key.decode('ascii'))
-            return key
+            return key.decode('ascii')
     
+    def get_current_key(self):
+        if os.path.exists(r'files/key.txt'):
+            with open(r"files/key.txt",'r') as file:
+                key = file.read()
+            return key
+        else:
+            return self.get_new_key()
 
 encrypter = Encrypter()
 
-print(encrypter.get_new_key())
+print(encrypter.get_current_key())
