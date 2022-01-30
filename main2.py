@@ -104,6 +104,10 @@ def access(p1):
 
 
 def seedata():
+    dic2 = get_current_data()
+    x = list(dic2.keys())
+    y = x
+    x.remove('MPW')
     ind = 1
     for k in x:
         print(ind, ": ", k)
@@ -190,7 +194,7 @@ def editdata():
             change_val = str(input("Enter New Valuefor "+addkey+":"))
             dic2[key].pop(addkey)
             dic2[key][change_key] = change_val
-            write(dic2)
+            store_data(dic2)
             print("Updated")
 
 canstart = access(getpass.getpass("Enter Password: "))
