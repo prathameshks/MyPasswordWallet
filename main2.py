@@ -1,9 +1,7 @@
-from asyncore import write
 from cryptography.fernet import Fernet
 import os
 import json
 import getpass
-
 
 class Encrypter:
     def __init__(self) -> None:
@@ -87,9 +85,7 @@ def updatemainpass(dictraw):
 
 
 def startfirst():
-    print('got1')
     if get_current_data() == {}:
-        print("got2")
         store_data(updatemainpass({}))
 
 
@@ -100,12 +96,10 @@ y = x
 x.remove('MPW')
 
 
-def access():
-    p1 = getpass.getpass("Enter Password: ")
+def access(p1):
     if p1 == "pks":
         return True
     else:
-        print('wrong password')
         return False
 
 
@@ -135,7 +129,6 @@ def seedata():
             print('PW', ": ", maindata['PW'])
         except:
             print("No Data")
-
 
 def editdata():
     ind = 1
@@ -188,7 +181,7 @@ def editdata():
             print('Added')
         elif addkey == "Remove":
             rch = str(input("Do you really want to remove(y/n):"))
-            if rch in ["y", "Y", "yes", "Yes", "YES"]:
+            if rch.lower() in ["y", "yes"]:
                 dic2.pop(key)
                 print("Removed")
             store_data(dic2)
@@ -200,7 +193,7 @@ def editdata():
             write(dic2)
             print("Updated")
 
-canstart = access()
+canstart = access(getpass.getpass("Enter Password: "))
 while True:
     if canstart:
         print("----------Menu----------")
@@ -221,6 +214,6 @@ while True:
             else:
                 print("Wrong Choice...")
     else:
-        canstart=access()
+        canstart=access(getpass.getpass("Enter Password: "))
 else:
     print("Thank You!")
