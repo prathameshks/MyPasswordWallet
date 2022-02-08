@@ -1,9 +1,12 @@
 import os
 import json
+
+from matplotlib.pyplot import get
 from encrypter import Encrypter
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import PhotoImage, messagebox, ttk
 from passlib.context import CryptContext
+from PIL import ImageTk ,Image
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"],default="pbkdf2_sha256",pbkdf2_sha256__default_rounds=30000)
 def encryptpass(pw):
@@ -214,7 +217,7 @@ def oldstart(*args,color='green'):
         verification.rowconfigure(0,weight=2)
         verification.rowconfigure(1,weight=1)
         verification.rowconfigure(2,weight=2)
-        verification.rowconfigure(3,weight=2)
+        verification.rowconfigure(3,weight=1)
         mainlab = ttk.Label(verification,text="Welcome To Password Wallet",justify='center',font=("Arial", 15))
         mainlab.grid(row=0,column=0)
 
@@ -242,6 +245,58 @@ def oldstart(*args,color='green'):
         newstart()
 
 oldstart()
+
+def set_theme(thm):
+    with open("files/theme.txt",'w') as thm_file:
+        thm_file.write(thm)
+
+def get_theme():
+    if os.path.exists("files/theme.txt"):
+        with open("files/theme.txt",'r') as thm_file:
+            thm = thm_file.read()
+            if thm in ['light','dark']:
+                return thm
+            else:
+                set_theme('light')
+                return 'light'
+    else:
+        set_theme('light')
+        return 'light'
+
+
+bottom_bar = tk.Frame(win)
+bottom_bar.grid(row=1,column=0,sticky='nsew')
+bottom_bar.tkraise()
+
+# Set the initial theme
+win.tk.call("source", "files/theme/sunvallydark-white/sun-valley.tcl")
+win.tk.call("set_theme", get_theme())
+
+# images
+light_image = ImageTk.PhotoImage((Image.open('files/light.png')).resize((20, 20), Image.ANTIALIAS))
+dark_image = ImageTk.PhotoImage((Image.open('files/dark.png')).resize((20, 20), Image.ANTIALIAS))
+
+def change_theme():
+    # NOTE: The theme's real name is sun-valley-<mode>
+    if win.tk.call("ttk::style", "theme", "use") == "sun-valley-dark":
+        # Set light theme
+        win.tk.call("set_theme", "light")
+        set_theme('light')
+        button_chng_thm.config(image=dark_image)
+    else:
+        # Set dark theme
+        win.tk.call("set_theme", "dark")
+        set_theme('dark')
+        button_chng_thm.config(image=light_image) 
+
+# Remember, you have to use ttk widgets
+button_chng_thm = ttk.Button(bottom_bar, command=change_theme,compound='center')
+button_chng_thm.pack(side='left')
+if get_theme=='light':
+    button_chng_thm.config(image = dark_image)
+else:
+    button_chng_thm.config(image=light_image) 
+
 
 
 win.mainloop()
