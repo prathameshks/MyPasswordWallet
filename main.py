@@ -191,7 +191,7 @@ def darkstyle(root):
     style.configure("Accentbutton", foreground='white')
     style.configure("Togglebutton", foreground='white')
     return style
-style = darkstyle(win)
+# style = darkstyle(win)
 
 def oldstart(*args,color='green'):
     if os.path.exists('files/hash.txt'):
