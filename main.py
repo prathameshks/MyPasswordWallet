@@ -1,13 +1,12 @@
 import os
 import json
-
-from matplotlib.pyplot import get
 from encrypter import Encrypter
 import tkinter as tk
 from tkinter import PhotoImage, messagebox, ttk
 from passlib.context import CryptContext
 from PIL import ImageTk ,Image
 
+# for encrypting and storing password
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"],default="pbkdf2_sha256",pbkdf2_sha256__default_rounds=30000)
 def encryptpass(pw):
     return pwd_context.hash(pw)
@@ -56,7 +55,6 @@ def store_data(data):
             data).encode('ascii'))).decode('ascii')
         newfile.write(e_data)
 
-
 def get_current_data():
     key = bytes(encrypter.get_current_key(), 'ascii')
     if os.path.exists(r"files/curdata.txt"):
@@ -73,18 +71,21 @@ def updatemainpass(dictraw,password):
     dictraw['MPW'] = {'PW': password}
     return dictraw
 
-# def showhide():
-#     val = pwshohidebtn.cget('text')
-#     print(val)
-#     if val == 'Hide':
-#         pwshohidebtn.config(text='Show')
-#         pwentry.config(show='*')
-#     else:
-#         pwshohidebtn.config(text='Hide')
-#         pwentry.config(show=None)
-#         pwentry.insert(0,pwentry.get())
-#         print("hidden")
+'''
+def showhide():
+    val = pwshohidebtn.cget('text')
+    print(val)
+    if val == 'Hide':
+        pwshohidebtn.config(text='Show')
+        pwentry.config(show='*')
+    else:
+        pwshohidebtn.config(text='Hide')
+        pwentry.config(show=None)
+        pwentry.insert(0,pwentry.get())
+        print("hidden")
+'''
 
+# main app after main password veri sucess
 def startmainapp():
     main = tk.Frame(win)
     main.grid(row=0,column=0,sticky="NSEW")
@@ -98,6 +99,7 @@ def authenticate(pw):
         oldstart("Wrong Password",color='red')
 
 
+# for starting new or first time ie show create pass window
 def newstart():
     def set():
         global dictraw
@@ -139,50 +141,57 @@ def newstart():
     setbtn = ttk.Button(setpass,text="set",command=set)
     setbtn.grid(row=4,column=0,columnspan=2)
 
-    
+def reset_data():
+    if os.path.exists('files/curdata.txt'):
+        os.remove('files/curdata.txt')
+        print('deleted old data')
+    else:
+        print('no data exists')
 
 
 
-
-def resetpass():
+# reset passowrd main
+# still find way to make authenticate for password change
+def resetapp():
     def reset():
         global dictraw
         pw1 = pwentry1.get()
         pw2 = pwentry2.get()
         if pw1!=pw2:
-            labinfo = ttk.Label(resetpass,text='Password Missmatch',justify='center',background='red')
+            labinfo = ttk.Label(resetapp,text='Password Missmatch',justify='center',background='red')
             labinfo.grid(row=4,column=0,columnspan=2,sticky="nsew")
             win.after(3500,lambda: (labinfo.destroy()))
         else:
-            if messagebox.askokcancel('Confermation',"Do you really want to reset password \nThis operation is ireversiable."):
+            if messagebox.askokcancel('Confermation',"This operation is ireversiable And Delete all older data!\nDo you really want to reset app?",):
                 sethash(pw1)
-                oldstart("Password Reseted Sucessfully")
+                reset_data()
+                oldstart("App Reseted Sucessfully")
             else:
-                resetpass()
-    resetpass = tk.Frame(win)
-    resetpass.grid(row=0, column=0, sticky='NSEW')
-    resetpass.tkraise()
-    resetpass.columnconfigure(0,weight=2)
-    resetpass.rowconfigure(1,weight=2)
-    resetpass.rowconfigure(2,weight=1)
-    resetpass.rowconfigure(3,weight=1)
-    # resetpass.rowconfigure(4,weight=1)
-    resetpass.rowconfigure(5,weight=2)
-    mainlab = ttk.Label(resetpass,text="Reset Password",justify='center',font=("Arial", 15))
+                resetapp()
+    resetapp = tk.Frame(win)
+    resetapp.grid(row=0, column=0, sticky='NSEW')
+    resetapp.tkraise()
+    resetapp.columnconfigure(0,weight=2)
+    resetapp.rowconfigure(1,weight=2)
+    resetapp.rowconfigure(2,weight=1)
+    resetapp.rowconfigure(3,weight=1)
+    # resetapp.rowconfigure(4,weight=1)
+    resetapp.rowconfigure(5,weight=2)
+    mainlab = ttk.Label(resetapp,text="Reset App",justify='center',font=("Arial", 15))
     mainlab.grid(row=1,column=0,columnspan=2)
-    btnback = ttk.Button(resetpass,text="Back",command=oldstart)
+    btnback = ttk.Button(resetapp,text="Back",command=oldstart)
     btnback.grid(row=0,column=1,sticky='e',columnspan=1)
-    pwlab1 = ttk.Label(resetpass,text='Enter New Password')
+    pwlab1 = ttk.Label(resetapp,text='Enter New Password')
     pwlab1.grid(row=2,column=0,sticky="esn")
-    pwentry1 = ttk.Entry(resetpass,show='*')
+    pwentry1 = ttk.Entry(resetapp,show='*')
     pwentry1.grid(row=2,column=1,sticky="EW",padx=30)
     
-    pwlab2 = ttk.Label(resetpass,text='Confirm   Password')
+    pwlab2 = ttk.Label(resetapp,text='Confirm   Password')
     pwlab2.grid(row=3,column=0,sticky="esn")
-    pwentry2 = ttk.Entry(resetpass,show='*')
+    pwentry2 = ttk.Entry(resetapp,show='*')
     pwentry2.grid(row=3,column=1,sticky="EW",padx=30)
     
-    resetbtn = ttk.Button(resetpass,text="Reset",command=reset)
+    resetbtn = ttk.Button(resetapp,text="Reset",command=reset)
     resetbtn.grid(row=5,column=0,columnspan=2)
 
     
@@ -214,29 +223,33 @@ def oldstart(*args,color='green'):
         verification.grid(row=0, column=0, sticky='NSEW')
 
         verification.columnconfigure(0,weight=2)
+        verification.columnconfigure(1,weight=2)
         verification.rowconfigure(0,weight=2)
         verification.rowconfigure(1,weight=1)
         verification.rowconfigure(2,weight=2)
         verification.rowconfigure(3,weight=1)
         mainlab = ttk.Label(verification,text="Welcome To Password Wallet",justify='center',font=("Arial", 15))
-        mainlab.grid(row=0,column=0)
+        mainlab.grid(row=0,column=0,columnspan=2)
 
         pwentry = ttk.Entry(verification,show=None)
         pwentry.insert(0, 'Enter Main Password')
-        pwentry.grid(row=1,column=0,sticky="EW",padx=30)
+        pwentry.grid(row=1,column=0,sticky="EW",padx=30,columnspan=2)
         # pwshohidebtn = ttk.Button(verification,text="Show",command=showhide)
         # pwshohidebtn.grid(row=1,column=1,sticky="W")
         pwentry.bind("<Button-1>", click)
         pwentry.bind("<Leave>", leave)
 
-        veribtn = ttk.Button(verification,text="  Authenticate  ",command=lambda:(authenticate(pwentry.get())))
-        veribtn.grid(row=2,column=0)
+        forgotpwbtn = ttk.Button(verification,text="Forgot Password")
+        forgotpwbtn.grid(row=2,column=0)
 
-        rsbtn = ttk.Button(verification,text="Reset Password",command=resetpass)
-        rsbtn.grid(row=3,column=0,sticky='n')
+        veribtn = ttk.Button(verification,text="Authenticate",command=lambda:(authenticate(pwentry.get())))
+        veribtn.grid(row=2,column=1)
+
+        rsbtn = ttk.Button(verification,text="Reset App",command=resetapp)
+        rsbtn.grid(row=3,column=0,sticky='n',columnspan=2)
 
         messageonveri = ttk.Label(verification,justify='center',foreground=color,font=('arial',10))
-        messageonveri.grid(row=4,column=0,sticky='n',pady=10)
+        messageonveri.grid(row=4,column=0,sticky='n',pady=10,columnspan=2)
         if len(args) == 1:
             messageonveri.config(text=args[0])
             win.after(3500,lambda: (messageonveri.destroy()))
@@ -292,7 +305,7 @@ def change_theme():
 # Remember, you have to use ttk widgets
 button_chng_thm = ttk.Button(bottom_bar, command=change_theme,compound='center')
 button_chng_thm.pack(side='left')
-if get_theme=='light':
+if get_theme()=='light':
     button_chng_thm.config(image = dark_image)
 else:
     button_chng_thm.config(image=light_image) 
