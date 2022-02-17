@@ -50,7 +50,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-CLIENT_SECRET_FILE = 'files/client_secret.json'
+CLIENT_SECRET_FILE = 'client_secret.json'
 API_NAME = 'drive'
 API_VERSION = 'v3'
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -99,7 +99,7 @@ def upload_file(file_name, file_path, folder_id, mime_type):
 
 def download_file(file_id, file_path):
     """download file with id and save to path given
-     :returns path where saved ex. files/test.png
+     :returns path where saved ex. test.png
      """
     # file_id = '1R-p5M50CZ6e4gOEP6GDd7Tx8YrnzzqM4'
     # file_name = 'test.txt'
@@ -175,14 +175,14 @@ def set_data(name, data, mime_type='text/plain'):
     ex. {'kind': 'drive#file', 'id': '18Vi0eE5qdA220tIaoIiodtbU3eknWLuZ', 'name': 'mytestfile1.png', 'mimeType': 'image/png'}
     """
     folder_id = get_folder_id('MyPasswordWallet')
-    with open(f'files/{name}', 'w') as file:
+    with open(f'{name}', 'w') as file:
         file.write(data)
     status_file, id_file = if_exists(name)
     if not status_file:
-        res = upload_file(name, f'files/{name}', folder_id, mime_type)
+        res = upload_file(name, f'{name}', folder_id, mime_type)
     else:
-        res = update_file(f'files/{name}', mime_type, id_file)
-    os.remove(f'files/{name}')
+        res = update_file(f'{name}', mime_type, id_file)
+    os.remove(f'{name}')
     return res
 
 
@@ -228,4 +228,3 @@ def if_exists(name):
 
 if __name__ == '__main__':
     print('Working')
-    print(get_data('curdata.txt'))

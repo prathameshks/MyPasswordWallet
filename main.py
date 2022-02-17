@@ -310,6 +310,6 @@ if get_theme()=='light':
 else:
     button_chng_thm.config(image=light_image) 
 
-
+store_data({'main':{'pw':'pks','us':'pksuser'},'2':{'user':'123'}})
 
 win.mainloop()
