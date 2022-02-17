@@ -71,6 +71,7 @@ def create_folder(name, parent=''):
         file_metadata['parents'] = [parent]
 
     res = service.files().create(body=file_metadata).execute()
+    print(f'folder created {name}')
     return res
 
 
@@ -92,7 +93,7 @@ def upload_file(file_name, file_path, folder_id, mime_type):
         body=file_metadata,
         media_body=media
     ).execute()
-
+    print(f'file uploaded {file_name}')
     return file
 
 
@@ -114,7 +115,7 @@ def download_file(file_id, file_path):
     fh.seek(0)
     with open(file_path, 'wb') as f:
         f.write(fh.read())
-
+    print('file downloaded ')
     return file_path
 
 
@@ -134,28 +135,97 @@ def update_file(file_path, mime_type, file_id_old):
         fileId=file_id_old,
         media_body=media
     ).execute()
-
+    print(f'file updated {file_path}')
     return file
 
 
-def list_files(folder_id):
+def list_files(folder_id=''):
     """returns list of dictionaries with id name and mimetype
     ex.[{'kind': 'drive#file', 'id': '1R-p5M50CZ6e4gOEP6GDd7Tx8YrnzzqM4', 'name': 'try.txt', 'mimeType': 'text/plain'}, {'kind': 'drive#file', 'id': '1LuG__t3cqjzDpK1lMVvU6jl0lXTjhpgU', 'name': 'hash.txt', 'mimeType': 'text/plain'}, {'kind': 'drive#file', 'id': '1xwmHTL2qXewYahqept3nOeDuGPOzhpP1', 'name': 'hash.txt', 'mimeType': 'text/plain'}]
     """
     # folder_id = '1TrJz2EY2QKX46GqR8HaBFjJi9WSHsUro'
-    query = f"parents = '{folder_id}'"
-    resp = service.files().list(q=query).execute()
-    files = resp.get('files')
-
-    next_page_token = resp.get('nextPageToken')
-    while next_page_token:
+    if folder_id != '':
+        query = f"parents = '{folder_id}'"
         resp = service.files().list(q=query).execute()
-        files.extend(resp.get('files'))
+        files = resp.get('files')
+
         next_page_token = resp.get('nextPageToken')
+        while next_page_token:
+            resp = service.files().list(q=query).execute()
+            files.extend(resp.get('files'))
+            next_page_token = resp.get('nextPageToken')
+        return files
 
-    return files
+    else:
+        query = "mimeType = 'application/vnd.google-apps.folder'"
+        resp = service.files().list(q=query).execute()
+        files = resp.get('files')
+
+        next_page_token = resp.get('nextPageToken')
+        while next_page_token:
+            resp = service.files().list(q=query).execute()
+            files.extend(resp.get('files'))
+            next_page_token = resp.get('nextPageToken')
+        return files
 
 
-if __name__=='__main__':
-    a = upload_file('test3.png','files/dark.png','1nML9f8GBTKu2mnNfy5qClHmU4sLFlsj5','application/vnd.google-apps.photo')
-    print('done',a)
+def set_data(name, data, mime_type='text/plain'):
+    """ upload file to folder id given
+    :returns dictionary with id namein drive mimetype
+    ex. {'kind': 'drive#file', 'id': '18Vi0eE5qdA220tIaoIiodtbU3eknWLuZ', 'name': 'mytestfile1.png', 'mimeType': 'image/png'}
+    """
+    folder_id = get_folder_id('MyPasswordWallet')
+    with open(f'files/{name}', 'w') as file:
+        file.write(data)
+    status_file, id_file = if_exists(name)
+    if not status_file:
+        res = upload_file(name, f'files/{name}', folder_id, mime_type)
+    else:
+        res = update_file(f'files/{name}', mime_type, id_file)
+    os.remove(f'files/{name}')
+    return res
+
+
+def get_data(name):
+    """returns data in the file in binary mode"""
+    file_status, file_id = if_exists(name)
+    if file_status:
+        request = service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fd=fh, request=request)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+            # print("Download progress {}".format(status.progress() * 100))
+        fh.seek(0)
+        return fh.read().decode('ascii')
+    else:
+        return '{}'
+
+
+def get_folder_id(name):
+    folders = list_files()
+    for folder in folders:
+        if folder['name'] == name:
+            id = folder['id']
+            print(f'Folder exists {name}')
+            return id
+    res = create_folder(name)
+    return res['id']
+
+
+def if_exists(name):
+    folder_id = get_folder_id('MyPasswordWallet')
+
+    files = list_files(folder_id)
+    for file in files:
+        if file['name'] == name:
+            file_id = file['id']
+            print(f'file exists {name}')
+            return True, file_id
+    return False, ''
+
+
+if __name__ == '__main__':
+    print('Working')
+    print(get_data('curdata.txt'))
