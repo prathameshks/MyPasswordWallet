@@ -63,7 +63,7 @@ def get_current_data():
             key, bytes(cur_data, 'ascii'))).decode('ascii')
         return strtodict(cur_data)
     else:
-        print("got here")
+        print("No data in drive")
         return {}
 
 def restart_app():
@@ -90,8 +90,8 @@ def startmainapp():
 
 def authenticate(pw):
     if verifypass(pw):
-        loading_frame.tkraise()
-        # startmainapp()
+        raise_frame(loading_frame)
+        startmainapp()
     else:
         oldstart("Wrong Password",color='red')
 
