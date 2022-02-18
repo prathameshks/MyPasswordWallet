@@ -1,6 +1,7 @@
 import os
 import json
 import sys
+from time import sleep
 from encrypter import Encrypter
 import tkinter as tk
 from tkinter import PhotoImage, messagebox, ttk
@@ -17,11 +18,11 @@ def verifypass(pw):
     hashcode = gethash()
     return pwd_context.verify(pw,hashcode)
     
-
 def sethash(pw):
     with open('files/hash.txt','w') as hashfile:
         hashfile.write(encryptpass(pw))
         return True
+
 def gethash():
     with open('files/hash.txt','r') as hashfile:
         hash = hashfile.read()
@@ -78,14 +79,126 @@ loading_frame.rowconfigure(0, weight=2)
 loading_frame.columnconfigure(0, weight=2)
 ttk.Label(loading_frame,text="Loading...").grid(row=0,column=0,sticky="NSEW")
 
+#windows for saved data
+
+
+# making new object with get ethod to continue in for loop
+class similar_entry:
+    def __init__(self,name) -> None:
+        self.name = name
+    def get(self):
+        return self.name
+#window to addd new data
+def add_new_data():
+    add_data_frame = tk.Frame()
+    add_data_frame.grid(row=0,column=0,sticky="NSEW") 
+    add_data_frame.tkraise()
+    padding_x,padding_y=10,(5,5)
+    labmain = ttk.Label(add_data_frame,text='Enter Details Below',justify='center',font=("Arial", 15))
+    labmain.grid(row=0,column=0,columnspan=3,padx=padding_x,pady=padding_y)
+    lab1 = ttk.Label(add_data_frame,text='Name of website or App')
+    lab1.grid(row=1,column=0,padx=padding_x,pady=padding_y)
+    
+    # adding weight
+    add_data_frame.columnconfigure(0,weight=2)
+    add_data_frame.columnconfigure(1,weight=2)
+
+    add_data_frame.rowconfigure(0,weight=3)
+    add_data_frame.rowconfigure(1,weight=2)
+    
+    name_entry = ttk.Entry(add_data_frame)
+    name_entry.grid(row=1,column=1,padx=padding_x,pady=padding_y)
+    datanames=[]
+    datavalue=[]
+
+    #data addition function to store to drive
+    def add_data():
+        for index in range(len(datavalue)):
+            data_n,data_e = datanames[index],datavalue[index]
+            print(data_n.get().title(),data_e.get())
+
+    global r
+    r = 2
+    datafilds = ['Username','Email ID','Mobile Number','Password',"Add Other"]
+    show_other_name = tk.StringVar()
+    
+    def selected_something(*args):
+        global r
+        name = show_other_name.get()
+        if name=='Add Other':
+            data_name = ttk.Entry(add_data_frame)
+            data_name.grid(row=r,column=0,padx=padding_x,pady=padding_y)
+            data_entry = ttk.Entry(add_data_frame)
+            data_entry.grid(row=r,column=1,padx=padding_x,pady=padding_y)
+            
+            datanames.append(data_name)
+            datavalue.append(data_entry)
+            r+=1
+        elif name=="Password":
+            data_name = ttk.Label(add_data_frame,text=name)
+            data_name.grid(row=r,column=0,padx=padding_x,pady=padding_y)
+            data_name_entry = similar_entry(name)
+            data_entry = ttk.Entry(add_data_frame,show='*')
+            data_entry.grid(row=r,column=1,padx=padding_x,pady=padding_y)
+            datanames.append(data_name_entry)
+            datavalue.append(data_entry)
+            datafilds.remove(name)
+            r+=1
+        else:
+            data_name = ttk.Label(add_data_frame,text=name)
+            data_name.grid(row=r,column=0,padx=padding_x,pady=padding_y)
+            data_name_entry = similar_entry(name)
+            data_entry = ttk.Entry(add_data_frame)
+            data_entry.grid(row=r,column=1,padx=padding_x,pady=padding_y)
+            datanames.append(data_name_entry)
+            datavalue.append(data_entry)
+            datafilds.remove(name)
+            r+=1
+        add_data_frame.rowconfigure(r-1,weight=2)
+        add_data_frame.rowconfigure(r,weight=2)
+        add_data_frame.rowconfigure(r+1,weight=2)
+        
+        show_other.grid(row=r,column=0,padx=padding_x,pady=padding_y)
+        submit_new_data.grid(row=r+1,column=1,padx=padding_x,pady=padding_y)
+        show_other['values'] = datafilds
+
+    show_other = ttk.Combobox(add_data_frame,values=datafilds,textvariable=show_other_name,state='readonly')
+    show_other.grid(row=r,column=0,padx=padding_x,pady=padding_y)
+    show_other.bind('<<ComboboxSelected>>', selected_something)
+
+    submit_new_data = ttk.Button(add_data_frame,text="Save data",command=add_data)
+    submit_new_data.grid(row=r+1,column=1,padx=padding_x,pady=padding_y)
 
 # main app after main password veri sucess
 def startmainapp():
     main = tk.Frame(win)
-    main.grid(row=0,column=0,sticky="NSEW")
+    main.grid(row=0,column=0,sticky="NSEW") 
     main.tkraise()
-    ttk.Label(main,text="Auth Sucess").pack()
-    print(get_current_data())
+
+    # defining weights
+    main.rowconfigure(0,weight=3)
+    main.rowconfigure(1,weight=1)
+    main.rowconfigure(2,weight=2)
+    main.rowconfigure(3,weight=2)
+
+    main.columnconfigure(0,weight=2)
+    # label for main window
+    main_label = ttk.Label(main,text="Welcome to\nMy Password Wallet",justify='center',font=("Arial", 20))
+    main_label.grid(row=0,column=0)
+
+    # messsage to display
+    main_msz = ttk.Label(main,text="Login Sucessful",justify='center',font=("", 10),foreground='green')
+    main_msz.grid(row=1,column=0)
+    win.after(5000,lambda : (main_msz.destroy()))
+    #define buttons for old data view edit delete
+    btnold = ttk.Button(main,text="Get Saved Password")
+    btnold.grid(row=2,column=0)
+
+    #to add new data
+    btnnew = ttk.Button(main,text="Save New Password",command=add_new_data)
+    btnnew.grid(row=3,column=0)
+
+    # ttk.Label(main,text="Auth Sucess").pack()
 
 
 def authenticate(pw):
@@ -107,7 +220,7 @@ def newstart():
             labinfo.grid(row=3,column=0,columnspan=2,sticky="nsew")
             win.after(3500,lambda: (labinfo.destroy()))
         else:
-            if messagebox.askokcancel('Confermation',"Do you really want to set password \nThis operation is ireversiable."):
+            if messagebox.askokcancel('Confermation',"Do you really want to set this password \nThis operation is ireversiable."):
                 sethash(pw1)   
                 oldstart("Password created Sucessfully")          
             else:
@@ -256,7 +369,7 @@ def oldstart(*args,color='green'):
     else:
         newstart()
 
-oldstart()
+
 
 def set_theme(thm):
     with open("files/theme.txt",'w') as thm_file:
@@ -310,5 +423,9 @@ else:
     button_chng_thm.config(image=light_image) 
 
 # store_data({'main':{'pw':'pks','us':'pksuser'},'2':{'user':'123'}})
+
+if __name__=='__main__':
+    # oldstart()
+    startmainapp()
 
 win.mainloop()
