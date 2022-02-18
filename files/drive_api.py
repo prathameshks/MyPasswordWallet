@@ -50,7 +50,7 @@ def convert_to_RFC_datetime(year=1900, month=1, day=1, hour=0, minute=0):
     return dt
 
 
-CLIENT_SECRET_FILE = 'client_secret.json'
+CLIENT_SECRET_FILE = os.getcwd()+'\\files\\client_secret.json'
 API_NAME = 'drive'
 API_VERSION = 'v3'
 SCOPES = ['https://www.googleapis.com/auth/drive']

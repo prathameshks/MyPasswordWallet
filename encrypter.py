@@ -1,5 +1,7 @@
 from cryptography.fernet import Fernet
 import os
+from files import drive_api
+
 class Encrypter:
     def __init__(self) -> None:
         pass
@@ -16,14 +18,15 @@ class Encrypter:
 
     def get_new_key(self):
         key = Fernet.generate_key()
-        with open(r"files/key.txt", "w") as file:
-            file.write(key.decode('ascii'))
+        drive_api.set_data('key.txt',key.decode('ascii'))
+        print('new key generated')
         return key.decode('ascii')
 
     def get_current_key(self):
-        if os.path.exists(r'files/key.txt'):
-            with open(r"files/key.txt", 'r') as file:
-                key = file.read()
+        if drive_api.if_exists('key.txt')[0]:
+            print('key found')
+            key = drive_api.get_data('key.txt')
             return key
         else:
+            print('key not found')
             return self.get_new_key()
