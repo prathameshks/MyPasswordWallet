@@ -97,7 +97,7 @@ class similar_entry:
 def show_saved_data():
     global main_data
     # main_data = {'first': {'Username': 'username_updated', 'Email Id': 'prathameshks2003@gmail.com', 'Mobile Number': '1236547896', 'Password': 'Pks@2003', 'Gender': 'Male'}, 'second': {'Username': 'rtest', 'Password': 'rpass'}, 'second0': {'Username': 'rtest', 'Password': 'rpass', '': ''}, 'forth': {'Username': 'test', 'Password': 'test'}}
-    # # print(main_data)
+    
     show_data_frame = tk.Frame()
     show_data_frame.grid(row=0,column=0,sticky="NSEW") 
     show_data_frame.tkraise()
@@ -118,7 +118,7 @@ def show_saved_data():
     show_data_frame.rowconfigure(2,weight=2)
     
     def show_selected(*args):
-
+        global row_var
         name_of_app = selected_key.get()
         data_app = main_data[name_of_app]
         row_var = 3
@@ -150,6 +150,7 @@ def show_saved_data():
         main_key_edit.grid(row=2,column=2)
         main_key_delete.grid(row=2,column=3)
         row_lists = []
+        new_field_list = []
 
         def edit_app_data(e):
             # global row_lists
@@ -175,12 +176,17 @@ def show_saved_data():
                 key = row[0]
                 data = row[1].get()
                 data_app[key]=data
+            for nf_row in new_field_list:
+                nf_key = nf_row[0].get()
+                nf_data = nf_row[1].get()
+                data_app[nf_key]=nf_data
             if name_edited:
                 new_name = name_edit_entry.get()
                 main_data[new_name] = main_data[name_of_app]
                 main_data.pop(name_of_app)
             store_data(main_data)
             startmainapp('Data Saved to Google Drive')
+
         for key in data_app:
             if key!='Password':
                 key_label = ttk.Label(show_data_frame,text=key)
@@ -232,9 +238,22 @@ def show_saved_data():
             pw_key_edit.grid(row=row_var,column=2)
             show_data_frame.rowconfigure(row_var,weight=2)
             row_var+=1   
+        def add_new_filed():
+            global row_var
+            new_field_name = ttk.Entry(show_data_frame)
+            new_field_value = ttk.Entry(show_data_frame)
+            new_field_name.grid(row=row_var,column=0)
+            new_field_value.grid(row=row_var,column=1)
+            show_data_frame.rowconfigure(row_var,weight=2)
+            row_var+=1
+            new_field_list.append([new_field_name,new_field_value])
+            add_new_btn.grid(row=row_var,column=0,columnspan=1)
+            save_btn.grid(row=row_var,column=1,columnspan=2)
 
+        add_new_btn = ttk.Button(show_data_frame,text="Add new field",command=add_new_filed)
+        add_new_btn.grid(row=row_var,column=0,columnspan=1)
         save_btn = ttk.Button(show_data_frame,text="Save",command=save_edited)
-        save_btn.grid(row=row_var,column=1)
+        save_btn.grid(row=row_var,column=1,columnspan=2)
 
     lab1 = ttk.Label(show_data_frame,text='Name of website or App')
     lab1.grid(row=2,column=0,padx=padding_x,pady=padding_y)
