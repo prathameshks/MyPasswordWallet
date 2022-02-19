@@ -84,8 +84,6 @@ ttk.Label(loading_frame,text="Loading...").grid(row=0,column=0,sticky="NSEW")
 
 
 
-#windows for saved data
-
 
 # making new object with get ethod to continue in for loop
 class similar_entry:
@@ -93,6 +91,95 @@ class similar_entry:
         self.name = name
     def get(self):
         return self.name
+
+
+#windows for saved data
+def show_saved_data():
+    global main_data
+    main_data = get_current_data()
+
+    show_data_frame = tk.Frame()
+    show_data_frame.grid(row=0,column=0,sticky="NSEW") 
+    show_data_frame.tkraise()
+    padding_x,padding_y=10,(5,5)
+    labmain = ttk.Label(show_data_frame,text='Choose Name of App Below',justify='center',font=("Arial", 15))
+    labmain.grid(row=1,column=0,columnspan=3,padx=padding_x,pady=padding_y)
+    
+    # adding weight
+    show_data_frame.columnconfigure(0,weight=2)
+    show_data_frame.columnconfigure(1,weight=2)
+
+    show_data_frame.rowconfigure(0,weight=1)
+    show_data_frame.rowconfigure(1,weight=3)
+    show_data_frame.rowconfigure(2,weight=2)
+
+
+    
+    def show_selected(*args):
+        name_of_app = selected_key.get()
+        data_app = main_data[name_of_app]
+        row_var = 3
+        for key in data_app:
+            if key!='Password':
+                def edit_app_data(data_key_name,row_now):
+                    # def save_this(key,row_n2):
+                    #     global main_data
+                    #     data_to_save = key_edit_entry.get()
+                    #     main_data[name_of_app][key] = data_to_save
+                    #     store_data(main_data)
+                    #     key_edit_entry.grid_forget()
+                    #     key_data.config(text=data_to_save)
+                    #     key_data.grid(row=row_n2,column=1)
+                    #     key_edit.config(text="Edit",command= lambda e=(key,row_n2): (edit_app_data(e[0],e[1])))
+
+                    key_edit_entry = ttk.Entry(show_data_frame)
+                    key_edit_entry.insert(0, data_app[data_key_name])
+                    key_edit_entry.grid(row=row_now,column=1) 
+                    key_data.destroy()
+                    # key_edit.config(text='Save',command=lambda e=(data_key_name,row_now): (save_this(e[0],e[1])))
+
+
+                key_label = ttk.Label(show_data_frame,text=key)
+                key_data = ttk.Label(show_data_frame,text=data_app[key])
+                key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var): (edit_app_data(e[0],e[1])))
+                key_label.grid(row=row_var,column=0)                    
+                key_data.grid(row=row_var,column=1)            
+                key_edit.grid(row=row_var,column=2)
+                row_var+=1   
+        else:
+            key='Password'
+            def show_password():
+                pw_key_data.config(text=data_app[key])
+                pw_key_label.config(text="Hide Password")
+                pw_key_label.config(command=hide_password)
+
+            def hide_password():
+                pw_key_data.config(text=len(data_app[key])*'*')
+                pw_key_label.config(text="Show Password")
+                pw_key_label.config(command=show_password)
+
+
+            pw_key_label = ttk.Button(show_data_frame,text="Show Password",command= show_password)
+            pw_key_data = ttk.Label(show_data_frame,text=len(data_app[key])*'*')
+            pw_key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var): (edit_app_data(e[0],e[1])))
+            pw_key_label.grid(row=row_var,column=0)                    
+            pw_key_data.grid(row=row_var,column=1)            
+            pw_key_edit.grid(row=row_var,column=2)
+            row_var+=1   
+
+
+    lab1 = ttk.Label(show_data_frame,text='Name of website or App')
+    lab1.grid(row=2,column=0,padx=padding_x,pady=padding_y)
+
+    datafilds =[name for name in main_data.keys()]
+    selected_key = tk.StringVar()
+
+    name_list = ttk.Combobox(show_data_frame,values=datafilds,textvariable=selected_key,state='readonly')
+    name_list.grid(row=2,column=1,padx=padding_x,pady=padding_y)
+    name_list.bind('<<ComboboxSelected>>', show_selected)
+
+
+
 #window to addd new data
 def add_new_data():
     global main_data
@@ -219,24 +306,16 @@ def startmainapp(message='',color='green'):
     main_label = ttk.Label(main,text="Welcome to\nMy Password Wallet",justify='center',font=("Arial", 20))
     main_label.grid(row=0,column=0)
 
-    # messsage to display
-    # main_msz = ttk.Label(main,text="Login Sucessful",justify='center',font=("", 10),foreground='green')
-    # main_msz.grid(row=1,column=0)
-    # win.after(5000,lambda : (main_msz.destroy()))
-
-
     #define buttons for old data view edit delete
-    btnold = ttk.Button(main,text="Get Saved Password")
+    btnold = ttk.Button(main,text="Get Saved Password", command=show_saved_data)
     btnold.grid(row=2,column=0)
-        
-    # global variable for data
-    global main_data
-    main_data = get_current_data()
 
 
     #to add new data
     btnnew = ttk.Button(main,text="Save New Password",command=add_new_data)
     btnnew.grid(row=3,column=0)
+    
+    # messsage to display
     messageonveri = ttk.Label(main,justify='center',foreground=color,font=('arial',10))
     messageonveri.grid(row=4,column=0,sticky='n',pady=10)
         
@@ -250,6 +329,10 @@ def startmainapp(message='',color='green'):
 def authenticate(pw):
     if verifypass(pw):
         raise_frame(loading_frame)
+                
+        # global variable for data
+        global main_data
+        main_data = get_current_data()
         startmainapp(message='Login Sucessful')
     else:
         oldstart("Wrong Password",color='red')
