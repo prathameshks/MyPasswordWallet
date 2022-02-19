@@ -1,7 +1,9 @@
+
 import os
 import json
 import sys
 from time import sleep
+
 from encrypter import Encrypter
 import tkinter as tk
 from tkinter import PhotoImage, messagebox, ttk
@@ -79,6 +81,9 @@ loading_frame.rowconfigure(0, weight=2)
 loading_frame.columnconfigure(0, weight=2)
 ttk.Label(loading_frame,text="Loading...").grid(row=0,column=0,sticky="NSEW")
 
+
+
+
 #windows for saved data
 
 
@@ -90,35 +95,63 @@ class similar_entry:
         return self.name
 #window to addd new data
 def add_new_data():
+    global main_data
+
     add_data_frame = tk.Frame()
     add_data_frame.grid(row=0,column=0,sticky="NSEW") 
     add_data_frame.tkraise()
     padding_x,padding_y=10,(5,5)
     labmain = ttk.Label(add_data_frame,text='Enter Details Below',justify='center',font=("Arial", 15))
-    labmain.grid(row=0,column=0,columnspan=3,padx=padding_x,pady=padding_y)
-    lab1 = ttk.Label(add_data_frame,text='Name of website or App')
-    lab1.grid(row=1,column=0,padx=padding_x,pady=padding_y)
+    labmain.grid(row=1,column=0,columnspan=3,padx=padding_x,pady=padding_y)
     
     # adding weight
     add_data_frame.columnconfigure(0,weight=2)
     add_data_frame.columnconfigure(1,weight=2)
 
-    add_data_frame.rowconfigure(0,weight=3)
-    add_data_frame.rowconfigure(1,weight=2)
+    add_data_frame.rowconfigure(0,weight=1)
+    add_data_frame.rowconfigure(1,weight=3)
+    add_data_frame.rowconfigure(2,weight=2)
     
-    name_entry = ttk.Entry(add_data_frame)
-    name_entry.grid(row=1,column=1,padx=padding_x,pady=padding_y)
+    right_image = ImageTk.PhotoImage((Image.open('files/right.png')).resize((20, 20), Image.ANTIALIAS))
+    wrong_image = ImageTk.PhotoImage((Image.open('files/wrong.png')).resize((20, 20), Image.ANTIALIAS))
+     
+
     datanames=[]
     datavalue=[]
+    def check_name(*args):
+        main_name = name_entry.get()
+        if main_name in main_data.keys() or main_name=='':
+            status_lab.config(image=wrong_image)
+            submit_new_data.config(state='disabled')
+        else:
+            status_lab.config(image=right_image)
+            submit_new_data.config(state='!disabled')
+
+    lab1 = ttk.Label(add_data_frame,text='Name of website or App')
+    lab1.grid(row=2,column=0,padx=padding_x,pady=padding_y)
+    name_entry = ttk.Entry(add_data_frame)
+    name_entry.grid(row=2,column=1,padx=padding_x,pady=padding_y)
+    name_entry.bind("<KeyRelease>", check_name)
+
+    status_lab = ttk.Label(add_data_frame,justify='left')
+    status_lab.grid(row=2,column=2,padx=padding_x,pady=padding_y)
 
     #data addition function to store to drive
     def add_data():
+        global main_data
+        main_name = name_entry.get()
+        sub_dict={}
         for index in range(len(datavalue)):
             data_n,data_e = datanames[index],datavalue[index]
-            print(data_n.get().title(),data_e.get())
+            sub_dict[data_n.get().title()]=data_e.get()
+        main_data[main_name]=sub_dict
+        store_data(main_data)
+        messagebox.showinfo('My Password Wallet','Data Saved Successfully to Google Drive.')
+        startmainapp(message="Data Saved")
+
 
     global r
-    r = 2
+    r = 3
     datafilds = ['Username','Email ID','Mobile Number','Password',"Add Other"]
     show_other_name = tk.StringVar()
     
@@ -133,7 +166,7 @@ def add_new_data():
             
             datanames.append(data_name)
             datavalue.append(data_entry)
-            r+=1
+            
         elif name=="Password":
             data_name = ttk.Label(add_data_frame,text=name)
             data_name.grid(row=r,column=0,padx=padding_x,pady=padding_y)
@@ -143,7 +176,7 @@ def add_new_data():
             datanames.append(data_name_entry)
             datavalue.append(data_entry)
             datafilds.remove(name)
-            r+=1
+           
         else:
             data_name = ttk.Label(add_data_frame,text=name)
             data_name.grid(row=r,column=0,padx=padding_x,pady=padding_y)
@@ -153,7 +186,7 @@ def add_new_data():
             datanames.append(data_name_entry)
             datavalue.append(data_entry)
             datafilds.remove(name)
-            r+=1
+        r+=1
         add_data_frame.rowconfigure(r-1,weight=2)
         add_data_frame.rowconfigure(r,weight=2)
         add_data_frame.rowconfigure(r+1,weight=2)
@@ -166,11 +199,11 @@ def add_new_data():
     show_other.grid(row=r,column=0,padx=padding_x,pady=padding_y)
     show_other.bind('<<ComboboxSelected>>', selected_something)
 
-    submit_new_data = ttk.Button(add_data_frame,text="Save data",command=add_data)
+    submit_new_data = ttk.Button(add_data_frame,text="Save data",command=add_data,state='disabled')
     submit_new_data.grid(row=r+1,column=1,padx=padding_x,pady=padding_y)
 
 # main app after main password veri sucess
-def startmainapp():
+def startmainapp(message='',color='green'):
     main = tk.Frame(win)
     main.grid(row=0,column=0,sticky="NSEW") 
     main.tkraise()
@@ -187,16 +220,29 @@ def startmainapp():
     main_label.grid(row=0,column=0)
 
     # messsage to display
-    main_msz = ttk.Label(main,text="Login Sucessful",justify='center',font=("", 10),foreground='green')
-    main_msz.grid(row=1,column=0)
-    win.after(5000,lambda : (main_msz.destroy()))
+    # main_msz = ttk.Label(main,text="Login Sucessful",justify='center',font=("", 10),foreground='green')
+    # main_msz.grid(row=1,column=0)
+    # win.after(5000,lambda : (main_msz.destroy()))
+
+
     #define buttons for old data view edit delete
     btnold = ttk.Button(main,text="Get Saved Password")
     btnold.grid(row=2,column=0)
+        
+    # global variable for data
+    global main_data
+    main_data = get_current_data()
+
 
     #to add new data
     btnnew = ttk.Button(main,text="Save New Password",command=add_new_data)
     btnnew.grid(row=3,column=0)
+    messageonveri = ttk.Label(main,justify='center',foreground=color,font=('arial',10))
+    messageonveri.grid(row=4,column=0,sticky='n',pady=10)
+        
+    if message!='':
+        messageonveri.config(text=message)
+        win.after(3500,lambda: (messageonveri.destroy()))
 
     # ttk.Label(main,text="Auth Sucess").pack()
 
@@ -204,7 +250,7 @@ def startmainapp():
 def authenticate(pw):
     if verifypass(pw):
         raise_frame(loading_frame)
-        startmainapp()
+        startmainapp(message='Login Sucessful')
     else:
         oldstart("Wrong Password",color='red')
 
