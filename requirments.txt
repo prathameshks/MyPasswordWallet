@@ -3,3 +3,4 @@ google-auth-httplib2
 google-auth-oauthlib
 cryptography==36.0.1
 pillow
+passlib==1.7.4
