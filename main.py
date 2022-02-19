@@ -1,8 +1,7 @@
-
 import os
 import json
 import sys
-from time import sleep
+# from time import sleep
 
 from encrypter import Encrypter
 import tkinter as tk
@@ -10,6 +9,8 @@ from tkinter import PhotoImage, messagebox, ttk
 from passlib.context import CryptContext
 from PIL import ImageTk ,Image
 from files import drive_api
+# from files import fake_drive as drive_api
+
 
 # for encrypting and storing password
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"],default="pbkdf2_sha256",pbkdf2_sha256__default_rounds=30000)
@@ -32,7 +33,7 @@ def gethash():
 
 
 win = tk.Tk()
-win.geometry('300x300')
+win.geometry('500x600+200+50')
 win.title('My Password Wallet')
 win.iconbitmap(r'files/icon.ico')
 win.minsize(300,300)
@@ -62,8 +63,7 @@ def get_current_data():
     key = bytes(encrypter.get_current_key(), 'ascii')
     if drive_api.if_exists('curdata.txt')[0]:
         cur_data = drive_api.get_data('curdata.txt')
-        cur_data = (encrypter.decrypt(
-            key, bytes(cur_data, 'ascii'))).decode('ascii')
+        cur_data = (encrypter.decrypt(key, bytes(cur_data, 'ascii'))).decode('ascii')
         return strtodict(cur_data)
     else:
         print("No data in drive")
@@ -96,77 +96,145 @@ class similar_entry:
 #windows for saved data
 def show_saved_data():
     global main_data
-    main_data = get_current_data()
-
+    # main_data = {'first': {'Username': 'username_updated', 'Email Id': 'prathameshks2003@gmail.com', 'Mobile Number': '1236547896', 'Password': 'Pks@2003', 'Gender': 'Male'}, 'second': {'Username': 'rtest', 'Password': 'rpass'}, 'second0': {'Username': 'rtest', 'Password': 'rpass', '': ''}, 'forth': {'Username': 'test', 'Password': 'test'}}
+    # # print(main_data)
     show_data_frame = tk.Frame()
     show_data_frame.grid(row=0,column=0,sticky="NSEW") 
     show_data_frame.tkraise()
     padding_x,padding_y=10,(5,5)
+    btn_back = ttk.Button(show_data_frame,text="Back",command=startmainapp)
+    btn_back.grid(row=0,column=3,sticky='e')
     labmain = ttk.Label(show_data_frame,text='Choose Name of App Below',justify='center',font=("Arial", 15))
     labmain.grid(row=1,column=0,columnspan=3,padx=padding_x,pady=padding_y)
     
     # adding weight
-    show_data_frame.columnconfigure(0,weight=2)
-    show_data_frame.columnconfigure(1,weight=2)
+    show_data_frame.columnconfigure(0,weight=4)
+    show_data_frame.columnconfigure(1,weight=4)
+    show_data_frame.columnconfigure(2,weight=2)
+    show_data_frame.columnconfigure(3,weight=2)
 
     show_data_frame.rowconfigure(0,weight=1)
-    show_data_frame.rowconfigure(1,weight=3)
+    show_data_frame.rowconfigure(1,weight=2)
     show_data_frame.rowconfigure(2,weight=2)
-
-
     
     def show_selected(*args):
+
         name_of_app = selected_key.get()
         data_app = main_data[name_of_app]
         row_var = 3
+        global name_edited
+        name_edited = False
+        name_list.destroy()
+        name_label_selected = ttk.Label(show_data_frame,text=name_of_app)
+        name_label_selected.grid(row=2,column=1,padx=padding_x,pady=padding_y)
+        name_edit_entry = ttk.Entry(show_data_frame)
+
+        def edit_main_app_name():
+            global name_edited
+            name_label_selected.destroy()
+            name_edit_entry.insert(0, name_of_app)
+            name_edit_entry.grid(row=2,column=1)
+            name_edited = True
+
+        def delet_main_app_data():
+            if messagebox.askokcancel('My Password Wallet',f'Do you really want to delete {name_of_app} from saved data.\nThis operation is irreversiable'):
+                main_data.pop(name_of_app)
+                store_data(main_data)
+                startmainapp(f'{name_of_app} Data deleted',color='red')
+
+            else:
+                pass    
+
+        main_key_edit = ttk.Button(show_data_frame,text="Edit",command= edit_main_app_name)
+        main_key_delete = ttk.Button(show_data_frame,text="Delete",command= delet_main_app_data)
+        main_key_edit.grid(row=2,column=2)
+        main_key_delete.grid(row=2,column=3)
+        row_lists = []
+
+        def edit_app_data(e):
+            # global row_lists
+            data_key_name,row_now,key_data = e
+            key_edit_entry = ttk.Entry(show_data_frame)
+            key_edit_entry.insert(0, data_app[data_key_name])
+            key_edit_entry.grid(row=row_now,column=1)
+            key_data.destroy()
+            row = [data_key_name,key_edit_entry]
+            row_lists.append(row)
+            # key_edit.config(state='disabled')
+        def delete_app_data(e):
+            data_key_name,row_no = e
+            for row in row_lists:
+                if row[0]==data_key_name:
+                    row_lists.remove(row)
+            data_app.pop(data_key_name)
+            row_elements = show_data_frame.grid_slaves(row=row_no)
+            for row_element in row_elements:
+                row_element.destroy()
+        def save_edited():
+            for row in row_lists:
+                key = row[0]
+                data = row[1].get()
+                data_app[key]=data
+            if name_edited:
+                new_name = name_edit_entry.get()
+                main_data[new_name] = main_data[name_of_app]
+                main_data.pop(name_of_app)
+            store_data(main_data)
+            startmainapp('Data Saved to Google Drive')
         for key in data_app:
             if key!='Password':
-                def edit_app_data(data_key_name,row_now):
-                    # def save_this(key,row_n2):
-                    #     global main_data
-                    #     data_to_save = key_edit_entry.get()
-                    #     main_data[name_of_app][key] = data_to_save
-                    #     store_data(main_data)
-                    #     key_edit_entry.grid_forget()
-                    #     key_data.config(text=data_to_save)
-                    #     key_data.grid(row=row_n2,column=1)
-                    #     key_edit.config(text="Edit",command= lambda e=(key,row_n2): (edit_app_data(e[0],e[1])))
-
-                    key_edit_entry = ttk.Entry(show_data_frame)
-                    key_edit_entry.insert(0, data_app[data_key_name])
-                    key_edit_entry.grid(row=row_now,column=1) 
-                    key_data.destroy()
-                    # key_edit.config(text='Save',command=lambda e=(data_key_name,row_now): (save_this(e[0],e[1])))
-
-
                 key_label = ttk.Label(show_data_frame,text=key)
                 key_data = ttk.Label(show_data_frame,text=data_app[key])
-                key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var): (edit_app_data(e[0],e[1])))
-                key_label.grid(row=row_var,column=0)                    
-                key_data.grid(row=row_var,column=1)            
+                key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var,key_data): (edit_app_data(e)))
+                key_delete = ttk.Button(show_data_frame,text="Delete",command= lambda e=(key,row_var): (delete_app_data(e)))
+                key_label.grid(row=row_var,column=0)
+                key_data.grid(row=row_var,column=1)
                 key_edit.grid(row=row_var,column=2)
+                key_delete.grid(row=row_var,column=3)
+                show_data_frame.rowconfigure(row_var,weight=2)
                 row_var+=1   
         else:
             key='Password'
+
+            def edit_app_data_password(e):
+                # global row_lists
+                data_key_name,row_now,key_data,key_edit_entry = e
+                key_edit_entry.insert(0, data_app[data_key_name])
+                key_edit_entry.grid(row=row_now,column=1)
+                key_data.destroy()
+                row = [data_key_name,key_edit_entry]
+                row_lists.append(row)
+                pw_key_label.config(state='disabled')
+                pw_key_label.config(text="Password")
+                pw_key_edit.config(state='disabled')
+
             def show_password():
                 pw_key_data.config(text=data_app[key])
                 pw_key_label.config(text="Hide Password")
                 pw_key_label.config(command=hide_password)
+                # pw_key_edit_entry.config(show=None)
 
             def hide_password():
                 pw_key_data.config(text=len(data_app[key])*'*')
                 pw_key_label.config(text="Show Password")
                 pw_key_label.config(command=show_password)
+                # pw_key_edit_entry.config(show='*')
 
 
             pw_key_label = ttk.Button(show_data_frame,text="Show Password",command= show_password)
             pw_key_data = ttk.Label(show_data_frame,text=len(data_app[key])*'*')
-            pw_key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var): (edit_app_data(e[0],e[1])))
+            pw_key_edit_entry = ttk.Entry(show_data_frame)
+            pw_key_edit = ttk.Button(show_data_frame,text="Edit",command= lambda e=(key,row_var,pw_key_data,pw_key_edit_entry): (edit_app_data_password(e)))
+            pw_key_delete = ttk.Button(show_data_frame,text="Delete",command= lambda e=(key,row_var): (delete_app_data(e)))
             pw_key_label.grid(row=row_var,column=0)                    
             pw_key_data.grid(row=row_var,column=1)            
+            pw_key_delete.grid(row=row_var,column=3)
             pw_key_edit.grid(row=row_var,column=2)
+            show_data_frame.rowconfigure(row_var,weight=2)
             row_var+=1   
 
+        save_btn = ttk.Button(show_data_frame,text="Save",command=save_edited)
+        save_btn.grid(row=row_var,column=1)
 
     lab1 = ttk.Label(show_data_frame,text='Name of website or App')
     lab1.grid(row=2,column=0,padx=padding_x,pady=padding_y)
@@ -554,7 +622,7 @@ else:
 # store_data({'main':{'pw':'pks','us':'pksuser'},'2':{'user':'123'}})
 
 if __name__=='__main__':
-    # oldstart()
-    startmainapp()
+    oldstart()
+    # startmainapp()
 
 win.mainloop()
