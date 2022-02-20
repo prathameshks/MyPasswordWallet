@@ -749,11 +749,7 @@ if get_theme() == 'light':
 else:
     button_chng_thm.config(image=light_image)
 
-# store_data({'main':{'pw':'pks','us':'pksuser'},'2':{'user':'123'}})
-
 if __name__ == '__main__':
-    # oldstart()
-    # startmainapp()
-    authenticate('2003')
+    oldstart()
 
 win.mainloop()
