@@ -41,6 +41,63 @@ win.iconbitmap(r'files/icon.ico')
 win.minsize(300, 300)
 
 
+# creating tooltip object 
+class CreateToolTip(object):
+    """
+    create a tooltip for a given widget
+    """
+    def __init__(self, widget, text):
+        self.waittime = 300     #miliseconds
+        self.wraplength = 180   #pixels
+        self.widget = widget
+        self.text = text
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.leave)
+        self.widget.bind("<ButtonPress>", self.leave)
+        self.id = None
+        self.tw = None
+
+    def enter(self, event=None):
+        self.schedule()
+
+    def leave(self, event=None):
+        self.unschedule()
+        self.hidetip()
+
+    def schedule(self):
+        self.unschedule()
+        self.id = self.widget.after(self.waittime, self.showtip)
+
+    def unschedule(self):
+        id = self.id
+        self.id = None
+        if id:
+            self.widget.after_cancel(id)
+
+    def showtip(self, event=None):
+        x = y = 0
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        # creates a toplevel window
+        self.tw = tk.Toplevel(self.widget)
+        # Leaves only the label and removes the app window
+        self.tw.wm_overrideredirect(True)
+        self.tw.wm_geometry("+%d+%d" % (x, y))
+        label = tk.Label(self.tw, text=self.text, justify='left', relief='solid', borderwidth=1,
+                       wraplength = self.wraplength)
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tw
+        self.tw= None
+        if tw:
+            tw.destroy()
+
+edit_image = ImageTk.PhotoImage(
+    (Image.open('files/edit.png')).resize((20, 20), Image.ANTIALIAS))
+delete_image = ImageTk.PhotoImage(
+    (Image.open('files/delete.png')).resize((20, 20), Image.ANTIALIAS))
 def raise_frame(frame):
     frame.tkraise()
 
@@ -111,15 +168,15 @@ def show_saved_data():
     padding_x, padding_y = 10, (5, 5)
     btn_back = ttk.Button(show_data_frame, text="Back", command=startmainapp)
     btn_back.grid(row=0, column=3, sticky='e')
-    labmain = ttk.Label(show_data_frame, text='Choose Name of App Below',
+    labmain = ttk.Label(show_data_frame, text='Get Saved Data Of App',
                         justify='center', font=("Arial", 15))
-    labmain.grid(row=1, column=0, columnspan=3, padx=padding_x, pady=padding_y)
+    labmain.grid(row=1, column=0, columnspan=4, padx=padding_x, pady=padding_y)
 
     # adding weight
     show_data_frame.columnconfigure(0, weight=4)
     show_data_frame.columnconfigure(1, weight=4)
-    show_data_frame.columnconfigure(2, weight=2)
-    show_data_frame.columnconfigure(3, weight=2)
+    # show_data_frame.columnconfigure(2, weight=2)
+    # show_data_frame.columnconfigure(3, weight=2)
 
     show_data_frame.rowconfigure(0, weight=1)
     show_data_frame.rowconfigure(1, weight=2)
@@ -155,9 +212,11 @@ def show_saved_data():
                 pass
 
         main_key_edit = ttk.Button(
-            show_data_frame, text="Edit", command=edit_main_app_name)
+            show_data_frame, image=edit_image, command=edit_main_app_name)
+        CreateToolTip(main_key_edit,'Edit')
         main_key_delete = ttk.Button(
-            show_data_frame, text="Delete", command=delet_main_app_data)
+            show_data_frame, image=delete_image, command=delet_main_app_data)
+        CreateToolTip(main_key_delete,'Delete')
         main_key_edit.grid(row=2, column=2)
         main_key_delete.grid(row=2, column=3)
         row_lists = []
@@ -204,10 +263,13 @@ def show_saved_data():
             if key != 'Password':
                 key_label = ttk.Label(show_data_frame, text=key)
                 key_data = ttk.Label(show_data_frame, text=data_app[key])
-                key_edit = ttk.Button(show_data_frame, text="Edit", command=lambda e=(
+                key_edit = ttk.Button(show_data_frame, image=edit_image, command=lambda e=(
                     key, row_var, key_data): (edit_app_data(e)))
-                key_delete = ttk.Button(show_data_frame, text="Delete", command=lambda e=(
+                CreateToolTip(key_edit,"Edit")
+                key_delete = ttk.Button(show_data_frame, image=delete_image, command=lambda e=(
                     key, row_var): (delete_app_data(e)))
+                CreateToolTip(key_delete,'Delete')
+
                 key_label.grid(row=row_var, column=0)
                 key_data.grid(row=row_var, column=1)
                 key_edit.grid(row=row_var, column=2)
@@ -246,10 +308,13 @@ def show_saved_data():
             pw_key_data = ttk.Label(
                 show_data_frame, text=len(data_app[key])*'*')
             pw_key_edit_entry = ttk.Entry(show_data_frame)
-            pw_key_edit = ttk.Button(show_data_frame, text="Edit", command=lambda e=(
+            pw_key_edit = ttk.Button(show_data_frame, image=edit_image, command=lambda e=(
                 key, row_var, pw_key_data, pw_key_edit_entry): (edit_app_data_password(e)))
-            pw_key_delete = ttk.Button(show_data_frame, text="Delete", command=lambda e=(
+            CreateToolTip(pw_key_edit,"Edit")
+            pw_key_delete = ttk.Button(show_data_frame, image=delete_image, command=lambda e=(
                 key, row_var): (delete_app_data(e)))
+            CreateToolTip(pw_key_delete,'Delete')
+
             pw_key_label.grid(row=row_var, column=0)
             pw_key_data.grid(row=row_var, column=1)
             pw_key_delete.grid(row=row_var, column=3)
@@ -687,7 +752,8 @@ else:
 # store_data({'main':{'pw':'pks','us':'pksuser'},'2':{'user':'123'}})
 
 if __name__ == '__main__':
-    oldstart()
+    # oldstart()
     # startmainapp()
+    authenticate('2003')
 
 win.mainloop()
