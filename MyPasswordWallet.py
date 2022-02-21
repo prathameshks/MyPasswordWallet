@@ -277,50 +277,51 @@ def show_saved_data():
                 show_data_frame.rowconfigure(row_var, weight=2)
                 row_var += 1
         else:
-            key = 'Password'
+            if 'Password' in data_app:
+                key = 'Password'
 
-            def edit_app_data_password(e):
-                # global row_lists
-                data_key_name, row_now, key_data, key_edit_entry = e
-                key_edit_entry.insert(0, data_app[data_key_name])
-                key_edit_entry.grid(row=row_now, column=1)
-                key_data.destroy()
-                row = [data_key_name, key_edit_entry]
-                row_lists.append(row)
-                pw_key_label.config(state='disabled')
-                pw_key_label.config(text="Password")
-                pw_key_edit.config(state='disabled')
+                def edit_app_data_password(e):
+                    # global row_lists
+                    data_key_name, row_now, key_data, key_edit_entry = e
+                    key_edit_entry.insert(0, data_app[data_key_name])
+                    key_edit_entry.grid(row=row_now, column=1)
+                    key_data.destroy()
+                    row = [data_key_name, key_edit_entry]
+                    row_lists.append(row)
+                    pw_key_label.config(state='disabled')
+                    pw_key_label.config(text="Password")
+                    pw_key_edit.config(state='disabled')
 
-            def show_password():
-                pw_key_data.config(text=data_app[key])
-                pw_key_label.config(text="Hide Password")
-                pw_key_label.config(command=hide_password)
-                # pw_key_edit_entry.config(show=None)
+                def show_password():
+                    pw_key_data.config(text=data_app[key])
+                    pw_key_label.config(text="Hide Password")
+                    pw_key_label.config(command=hide_password)
+                    # pw_key_edit_entry.config(show=None)
 
-            def hide_password():
-                pw_key_data.config(text=len(data_app[key])*'*')
-                pw_key_label.config(text="Show Password")
-                pw_key_label.config(command=show_password)
-                # pw_key_edit_entry.config(show='*')
+                def hide_password():
+                    pw_key_data.config(text=len(data_app[key])*'*')
+                    pw_key_label.config(text="Show Password")
+                    pw_key_label.config(command=show_password)
+                    # pw_key_edit_entry.config(show='*')
 
-            pw_key_label = ttk.Button(
-                show_data_frame, text="Show Password", command=show_password)
-            pw_key_data = ttk.Label(
-                show_data_frame, text=len(data_app[key])*'*')
-            pw_key_edit_entry = ttk.Entry(show_data_frame)
-            pw_key_edit = ttk.Button(show_data_frame, image=edit_image, command=lambda e=(
-                key, row_var, pw_key_data, pw_key_edit_entry): (edit_app_data_password(e)))
-            CreateToolTip(pw_key_edit,"Edit")
-            pw_key_delete = ttk.Button(show_data_frame, image=delete_image, command=lambda e=(
-                key, row_var): (delete_app_data(e)))
-            CreateToolTip(pw_key_delete,'Delete')
+                pw_key_label = ttk.Button(
+                    show_data_frame, text="Show Password", command=show_password)
+                pw_key_data = ttk.Label(
+                    show_data_frame, text=len(data_app[key])*'*')
+                pw_key_edit_entry = ttk.Entry(show_data_frame)
+                pw_key_edit = ttk.Button(show_data_frame, image=edit_image, command=lambda e=(
+                    key, row_var, pw_key_data, pw_key_edit_entry): (edit_app_data_password(e)))
+                CreateToolTip(pw_key_edit,"Edit")
+                pw_key_delete = ttk.Button(show_data_frame, image=delete_image, command=lambda e=(
+                    key, row_var): (delete_app_data(e)))
+                CreateToolTip(pw_key_delete,'Delete')
 
-            pw_key_label.grid(row=row_var, column=0)
-            pw_key_data.grid(row=row_var, column=1)
-            pw_key_delete.grid(row=row_var, column=3)
-            pw_key_edit.grid(row=row_var, column=2)
-            show_data_frame.rowconfigure(row_var, weight=2)
-            row_var += 1
+                pw_key_label.grid(row=row_var, column=0)
+                pw_key_data.grid(row=row_var, column=1)
+                pw_key_delete.grid(row=row_var, column=3)
+                pw_key_edit.grid(row=row_var, column=2)
+                show_data_frame.rowconfigure(row_var, weight=2)
+                row_var += 1
 
         def add_new_filed():
             global row_var
