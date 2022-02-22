@@ -3,7 +3,7 @@ import json
 import sys
 from encrypter import Encrypter
 import tkinter as tk
-from tkinter import PhotoImage, messagebox, ttk
+from tkinter import Frame, PhotoImage, messagebox, ttk
 from passlib.context import CryptContext
 from PIL import ImageTk, Image
 from files import drive_api
@@ -100,6 +100,7 @@ delete_image = ImageTk.PhotoImage(
     (Image.open('files/delete.png')).resize((20, 20), Image.ANTIALIAS))
 back_image = ImageTk.PhotoImage(
     (Image.open('files/back.png')).resize((35, 20), Image.ANTIALIAS))
+
 def raise_frame(frame):
     frame.tkraise()
 
@@ -128,7 +129,7 @@ def store_data(data):
 
 
 def get_current_data():
-    info_tip.config(text="Getting Data.")
+    info_tip.config(text="Downloading Data.")
     win.update_idletasks()
     key = bytes(encrypter.get_current_key(), 'ascii')
     if drive_api.if_exists('curdata.txt')[0]:
@@ -146,7 +147,7 @@ def get_current_data():
 
 def restart_app():
     os.startfile(__file__)
-    print('restarted')
+    # print('restarted')
     sys.exit()
 
 
@@ -172,7 +173,7 @@ class similar_entry:
 def show_saved_data():
     global main_data
     
-    show_data_frame = tk.Frame()
+    show_data_frame = tk.Frame(win)
     show_data_frame.grid(row=0, column=0, sticky="NSEW")
     show_data_frame.tkraise()
     padding_x, padding_y = 10, (5, 5)
@@ -369,7 +370,7 @@ def show_saved_data():
 def add_new_data():
     global main_data
 
-    add_data_frame = tk.Frame()
+    add_data_frame = tk.Frame(win)
     add_data_frame.grid(row=0, column=0, sticky="NSEW")
     add_data_frame.tkraise()
     padding_x, padding_y = 10, (5, 5)
@@ -586,9 +587,11 @@ def newstart():
 def reset_data():
     if os.path.exists('files/token_drive_v3.pickle'):
         os.remove('files/token_drive_v3.pickle')
-        print('deleted old token')
+        # print('deleted old token')
+        info_tip.config(text="Deleted old authentication")
     else:
-        print('no data exists')
+        info_tip.config(text="No data Exists")
+        # print('no data exists')
 
 
 # reset passowrd main
@@ -663,7 +666,7 @@ def oldstart(*args, color='green'):
 
         def leave(*args):
             if pwentry.get() == '':
-                pwentry.insert(0, 'Enter Main Password')
+                # pwentry.insert(0, 'Enter Main Password')
                 pwentry.config(show=None)
 
         verification = tk.Frame(win)
@@ -686,6 +689,8 @@ def oldstart(*args, color='green'):
         # pwshohidebtn.grid(row=1,column=1,sticky="W")
         pwentry.bind("<Button-1>", click)
         pwentry.bind("<Leave>", leave)
+        pwentry.bind("<Return>", lambda e: (authenticate(pwentry.get())))
+
 
         forgotpwbtn = ttk.Button(
             verification, text="Forgot Password", command=reset_password_fun)
@@ -728,9 +733,12 @@ def get_theme():
         set_theme('light')
         return 'light'
 
+# sepeartor btn bottom bar and upper Frame
+sep = ttk.Separator(win, orient="horizontal")
+sep.grid(row=1, column=0, sticky="ew")
 
 bottom_bar = tk.Frame(win)
-bottom_bar.grid(row=1, column=0, sticky='nsew')
+bottom_bar.grid(row=2, column=0, sticky='nsew')
 bottom_bar.tkraise()
 
 # Set the initial theme
@@ -766,11 +774,11 @@ button_chng_thm = ttk.Button(
 button_chng_thm.pack(side='left',padx=5,pady=5)
 CreateToolTip(button_chng_thm,'Change Theme')
 btn_exit = ttk.Button(
-    bottom_bar,image=Exit_image, command=lambda : exit(), compound='center')
+    bottom_bar,image=Exit_image, command=lambda : win.destroy(), compound='center')
 btn_exit.pack(side='left',padx=5,pady=5)
 CreateToolTip(button_chng_thm,'Exit')
 
-info_tip = ttk.Label(bottom_bar,text=' ',background='black',foreground='white')
+info_tip = ttk.Label(bottom_bar,text=' ',borderwidth=2)
 info_tip.pack(side='right',padx=5,pady=5)
 
 if get_theme() == 'light':
