@@ -98,6 +98,8 @@ edit_image = ImageTk.PhotoImage(
     (Image.open('files/edit.png')).resize((20, 20), Image.ANTIALIAS))
 delete_image = ImageTk.PhotoImage(
     (Image.open('files/delete.png')).resize((20, 20), Image.ANTIALIAS))
+back_image = ImageTk.PhotoImage(
+    (Image.open('files/back.png')).resize((35, 20), Image.ANTIALIAS))
 def raise_frame(frame):
     frame.tkraise()
 
@@ -115,23 +117,31 @@ def strtodict(string):
 
 
 def store_data(data):
+    info_tip.config(text="Storing Data.")
     key = bytes(encrypter.get_new_key(), 'ascii')
     drive_api.set_data('key.txt', key.decode('ascii'))
     e_data = (encrypter.encrypt(key, json.dumps(
         data).encode('ascii'))).decode('ascii')
     drive_api.set_data('curdata.txt', e_data)
+    info_tip.config(text="Data Stored.")
+
 
 
 def get_current_data():
+    info_tip.config(text="Getting Data.")
+    win.update_idletasks()
     key = bytes(encrypter.get_current_key(), 'ascii')
     if drive_api.if_exists('curdata.txt')[0]:
         cur_data = drive_api.get_data('curdata.txt')
         cur_data = (encrypter.decrypt(
             key, bytes(cur_data, 'ascii'))).decode('ascii')
+        info_tip.config(text="Got Data.")
         return strtodict(cur_data)
     else:
-        print("No data in drive")
+        info_tip.config(text="No data in drive")
         return {}
+    
+    
 
 
 def restart_app():
@@ -166,8 +176,9 @@ def show_saved_data():
     show_data_frame.grid(row=0, column=0, sticky="NSEW")
     show_data_frame.tkraise()
     padding_x, padding_y = 10, (5, 5)
-    btn_back = ttk.Button(show_data_frame, text="Back", command=startmainapp)
-    btn_back.grid(row=0, column=3, sticky='e')
+    btn_back = ttk.Button(show_data_frame, image=back_image, command=startmainapp)
+    btn_back.grid(row=0, column=3, sticky='ne')
+    CreateToolTip(btn_back,'Back')
     labmain = ttk.Label(show_data_frame, text='Get Saved Data Of App',
                         justify='center', font=("Arial", 15))
     labmain.grid(row=1, column=0, columnspan=4, padx=padding_x, pady=padding_y)
@@ -362,6 +373,9 @@ def add_new_data():
     add_data_frame.grid(row=0, column=0, sticky="NSEW")
     add_data_frame.tkraise()
     padding_x, padding_y = 10, (5, 5)
+    btn_back = ttk.Button(add_data_frame, image=back_image, command=startmainapp)
+    btn_back.grid(row=0, column=1, sticky='ne')
+    CreateToolTip(btn_back,'Back')
     labmain = ttk.Label(add_data_frame, text='Enter Details Below',
                         justify='center', font=("Arial", 15))
     labmain.grid(row=1, column=0, columnspan=3, padx=padding_x, pady=padding_y)
@@ -511,8 +525,10 @@ def startmainapp(message='', color='green'):
 
 
 def authenticate(pw):
+    info_tip.config(text="Authenticating.")
     if verifypass(pw):
         raise_frame(loading_frame)
+        # info_tip.config(text="Getting Data.")
 
         # global variable for data
         global main_data
@@ -542,8 +558,8 @@ def newstart():
     setpass = tk.Frame(win)
     setpass.grid(row=0, column=0, sticky='NSEW')
     setpass.tkraise()
-
     setpass.columnconfigure(0, weight=2)
+    info_tip.config(text="Create Password.")
     setpass.rowconfigure(0, weight=2)
     setpass.rowconfigure(1, weight=1)
     setpass.rowconfigure(2, weight=1)
@@ -608,8 +624,9 @@ def reset_password_fun():
     mainlab = ttk.Label(reset_password, text="Reset Password",
                         justify='center', font=("Arial", 15))
     mainlab.grid(row=1, column=0, columnspan=2)
-    btnback = ttk.Button(reset_password, text="Back", command=oldstart)
+    btnback = ttk.Button(reset_password, image=back_image, command=oldstart)
     btnback.grid(row=0, column=1, sticky='e', columnspan=1)
+    CreateToolTip(btnback,'Back')
     pwlab1 = ttk.Label(reset_password, text='Enter New Password')
     pwlab1.grid(row=2, column=0, sticky="esn")
     pwentry1 = ttk.Entry(reset_password, show='*')
@@ -637,7 +654,7 @@ def darkstyle(root):
 def oldstart(*args, color='green'):
     if os.path.exists('files/hash.txt'):
         first = True
-
+        info_tip.config(text="Login Required.")
         def click(*args, first=first):
             if first or pwentry.get() == 'Enter Main Password':
                 first = False
@@ -725,6 +742,8 @@ light_image = ImageTk.PhotoImage(
     (Image.open('files/light.png')).resize((20, 20), Image.ANTIALIAS))
 dark_image = ImageTk.PhotoImage(
     (Image.open('files/dark.png')).resize((20, 20), Image.ANTIALIAS))
+Exit_image = ImageTk.PhotoImage(
+    (Image.open('files/power.png')).resize((20, 20), Image.ANTIALIAS))
 
 
 def change_theme():
@@ -744,7 +763,16 @@ def change_theme():
 # Remember, you have to use ttk widgets
 button_chng_thm = ttk.Button(
     bottom_bar, command=change_theme, compound='center')
-button_chng_thm.pack(side='left')
+button_chng_thm.pack(side='left',padx=5,pady=5)
+CreateToolTip(button_chng_thm,'Change Theme')
+btn_exit = ttk.Button(
+    bottom_bar,image=Exit_image, command=lambda : exit(), compound='center')
+btn_exit.pack(side='left',padx=5,pady=5)
+CreateToolTip(button_chng_thm,'Exit')
+
+info_tip = ttk.Label(bottom_bar,text=' ',background='black',foreground='white')
+info_tip.pack(side='right',padx=5,pady=5)
+
 if get_theme() == 'light':
     button_chng_thm.config(image=dark_image)
 else:
